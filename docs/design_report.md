@@ -123,3 +123,19 @@ self-check and Diagnostic ECU cross-check):
   byte).
 - No bus-off / error-frame handling implemented; SocketCAN's default
   error handling is relied upon.
+
+
+## 9. Worked Example — Manual Frame Decoding
+
+To verify the encode/decode logic independently of the Python code, a sample of raw `candump vcan0` output was manually decoded against the Signal Specification (Section 5):
+
+Format: interface — CAN ID (hex) — DLC — payload bytes (hex), little-endian.
+
+| Line | ID | Bytes | Little-endian value | Formula | Decoded |
+|---|---|---|---|---|---|
+| 1 | 0x100 (Cell Voltage) | 6D 0E | 0x0E6D = 3693 (uint16) | V = raw / 1000 | 3.693 V |
+| 2 | 0x102 (Pack Current) | D7 FF | 0xFFD7 = −41 (int16, two's complement) | I = raw / 10 | −4.1 A |
+| 3 | 0x100 (Cell Voltage) | 64 0E | 0x0E64 = 3684 (uint16) | V = raw / 1000 | 3.684 V |
+| 4 | 0x102 (Pack Current) | D4 FF | 0xFFD4 = −44 (int16, two's complement) | I = raw / 10 | −4.4 A |
+
+The decoded values (~3.68–3.69 V, small negative discharge current) are consistent with the Sensor ECU's simulated steady-state output, confirming the encode/decode implementation in `common/can_ids.py` matches the specified byte layout, resolution, and endianness.
