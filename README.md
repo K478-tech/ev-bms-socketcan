@@ -159,3 +159,31 @@ ev-bms-socketcan/
 
 Full signal-level spec (byte layout, resolution, ranges) is in
 `docs/design_report.md`.
+
+## 7. Worked Example — Manually Decoding a candump Frame
+
+Sample raw output from `candump vcan0` during normal operation:
+
+
+Each line reads: **interface** `vcan0` — **CAN ID** (hex) — **DLC** (data length in bytes, in `[ ]`) — **payload bytes** (hex).
+
+- `100` = 0x100 = Cell Voltage message, DLC 2
+- `102` = 0x102 = Pack Current message, DLC 2
+
+Both signals are little-endian (`struct.pack('<H', ...)` for voltage, `'<h'` for current — see `common/can_ids.py`), so the **first byte is the low byte**.
+
+**Line 1 — `100 [2] 6D 0E`** (Cell Voltage)
+Bytes `0x6D, 0x0E` → little-endian uint16 = `0x0E6D` = 3693
+Voltage = 3693 / 1000 = **3.693 V**
+
+**Line 2 — `102 [2] D7 FF`** (Pack Current)
+Bytes `0xD7, 0xFF` → little-endian int16 = `0xFFD7` = −41 (two's complement)
+Current = −41 / 10 = **−4.1 A** (negative = discharging)
+
+**Line 3 — `100 [2] 64 0E`** (Cell Voltage)
+`0x0E64` = 3684 → **3.684 V**
+
+**Line 4 — `102 [2] D4 FF`** (Pack Current)
+`0xFFD4` = −44 → **−4.4 A**
+
+This confirms the Sensor ECU's simulated random-walk output (voltage ~3.68–3.69V, small discharge current) is being encoded and transmitted on the bus exactly as specified in the Signal Specification table above.
