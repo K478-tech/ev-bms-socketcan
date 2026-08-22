@@ -5,17 +5,27 @@ A 4-ECU distributed system communicating over a simulated CAN bus
 
 ## Architecture
 
-```
- Sensor ECU --0x100/0x101/0x102/0x1F0--> vcan0 <--0x110/0x111-- Controller ECU
-                                            ^                          |
-                                            |                          v
-                                     Diagnostic ECU              Actuator ECU
-                                            |
-                                          0x1FF (broadcast)
-                                            |
-                                           HMI
-```
+                         Cell Voltage (0x100)
+                         Cell Temperature (0x101)
+                         Pack Current (0x102)
+                         Sensor Fault (0x1F0)
+        SENSOR ECU ────────────────────────────────►
+                                                        │
+                              ┌─────────────────────────┴─────────────────────────┐
+                              │                    vcan0 (shared bus)              │
+                              └─────────────────────────┬─────────────────────────┘
+                                                        │
+        CONTROLLER ECU ◄────────────────────────────────┘
+             │   ▲
+             │   │  BMS Status (0x120)
+             │   └────────────────────────────► (Diagnostic ECU, HMI)
+             │
+             │  Contactor Cmd (0x110), Fan Cmd (0x111)
+             ▼
+        ACTUATOR ECU
 
+        DIAGNOSTIC ECU  ── listens to ALL IDs on vcan0 ── broadcasts System Warning (0x1FF)
+        HMI DASHBOARD   ── listens to ALL IDs on vcan0 (read-only)
 All 4 ECUs + the HMI attach to the same `vcan0` bus as independent OS
 processes — exactly like independent physical nodes on a real CAN bus.
 
