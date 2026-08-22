@@ -28,11 +28,10 @@
 | ID | Test | Expected Result | Actual Result | Pass/Fail |
 |----|------|------------------|----------------|-----------|
 | I1 | End-to-end normal run | No unexpected disconnects, SOC drifts smoothly, no false faults | Continuous run across full demo session with no false-positive faults | Pass |
-| I2 | Combined fault scenario | Controller reacts to 0x1F0 correctly without Diagnostic ECU running | Not tested this session — recommended as future work | Not Run |
+| I2 | Combined fault scenario | Controller reacts to 0x1F0 correctly even without Diagnostic ECU running | Over-voltage fault injected while Diagnostic ECU was running (logged correctly); Diagnostic ECU then terminated mid-fault. Controller log and dashboard continued to correctly show Mode=FAULT, Contactor=OPEN, Fan=100% with Diagnostic ECU no longer running, confirming the Sensor->Controller->Actuator fault chain is fully independent of Diagnostic ECU | Pass |
 | I3 | Full challenge sequence | Clean state progression through all challenges, clean diagnostic.log timeline | Confirmed: Normal -> Timeout (sensor killed) -> Fault (temp injection) -> Controller Timeout -> Restored -> OverVoltage Fault -> Actuator Failure, all logged with correct timestamps | Pass |
 
 ## Summary
 
-- **11 of 12** planned test cases executed and passed.
-- Only **I2** (combined fault scenario with Diagnostic ECU itself killed) remains untested — a low-priority edge case since Diagnostic ECU is a passive observer and its absence does not affect the Sensor->Controller->Actuator fault-response chain, which is independently confirmed by T2/T3.
+- **12 of 12** planned test cases executed and passed.
 - All 5 required verification challenges, plus both extended fault variants (over-voltage, Actuator node failure), were demonstrated successfully with terminal, dashboard, and log evidence.
