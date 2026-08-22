@@ -1,4 +1,4 @@
-# EV Battery Monitoring System — SocketCAN Assignment (Option 5)
+# EV Battery Monitoring System — SocketCAN Assignment
 
 A 4-ECU distributed system communicating over a simulated CAN bus
 (`vcan0`) using Linux SocketCAN + `python-can`.
